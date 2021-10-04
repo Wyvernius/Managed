@@ -67,7 +67,10 @@ namespace NoesisApp
             _device = new RenderDeviceGL();
         }
 
-        public override void SetWindow(IntPtr window) { }
+        public override void SetWindow(IntPtr window)
+        {
+            _window = window;
+        }
 
         public override void BeginRender()
         {

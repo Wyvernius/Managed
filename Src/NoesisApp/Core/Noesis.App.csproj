@@ -19,10 +19,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Noesis\Core\Noesis.GUI.csproj">
-      <PrivateAssets>contentfiles;analyzers</PrivateAssets>
-    </ProjectReference>
     <ProjectReference Include="..\Theme\Noesis.App.Theme.csproj" />
+    <ProjectReference Include="..\..\Noesis\Core\Noesis.GUI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

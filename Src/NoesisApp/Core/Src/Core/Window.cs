@@ -348,7 +348,8 @@ namespace NoesisApp
             renderer.UpdateRenderTree();
             renderer.RenderOffscreen();
 
-            RenderContext.SetDefaultRenderTarget(Display.ClientWidth, Display.ClientHeight, true);
+            //Add display scale so scaling is taken into account on retina displays.
+            RenderContext.SetDefaultRenderTarget((int)(Display.ClientWidth * Display.Scale), (int)(Display.ClientHeight * Display.Scale), true);
 
             _renderingArgs.Timestamp = time;
             Rendering?.Invoke(this, _renderingArgs);

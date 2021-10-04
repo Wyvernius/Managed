@@ -123,19 +123,13 @@
       <Compile Remove="**/AssemblyInfo.cs" />
     </ItemGroup>
     <!-- Copy the original AssemblyInfo.cs to obj\ folder, i.e. $(IntermediateOutputPath). The copied filepath is saved into @(ModifiedAssemblyInfo) Item. -->
-    <Copy SourceFiles="@(OriginalAssemblyInfo)" DestinationFiles="@(OriginalAssemblyInfo->'$(IntermediateOutputPath)%(Identity)')">
+    <Copy SourceFiles="@(OriginalAssemblyInfo)" DestinationFiles="@(OriginalAssemblyInfo-&gt;'$(IntermediateOutputPath)%(Identity)')">
       <Output TaskParameter="DestinationFiles" ItemName="ModifiedAssemblyInfo" />
     </Copy>
     <!-- Update the version in AssemblyVersion, AssemblyFileVersion and AssemblyInformationalVersion attributes using regular expression. -->
-    <RegexUpdateFile Files="@(ModifiedAssemblyInfo)"
-                Regex="AssemblyVersion\(&quot;(\d+)\.(\d+)(\.(\d+)\.(\d+)|\.*)&quot;\)"
-                ReplacementText="AssemblyVersion(&quot;$(AssemblyVersion)&quot;)" />
-    <RegexUpdateFile Files="@(ModifiedAssemblyInfo)"
-                Regex="AssemblyFileVersion\(&quot;(\d+)\.(\d+)(\.(\d+)\.(\d+)|\.*)&quot;\)"
-                ReplacementText="AssemblyFileVersion(&quot;$(AssemblyVersion)&quot;)" />
-    <RegexUpdateFile Files="@(ModifiedAssemblyInfo)"
-                Regex="AssemblyInformationalVersion\(&quot;(\d+)\.(\d+)(\.(\d+)|\.*)&quot;\)"
-                ReplacementText="AssemblyInformationalVersion(&quot;$(PackageVersion)&quot;)" />
+    <RegexUpdateFile Files="@(ModifiedAssemblyInfo)" Regex="AssemblyVersion\(&quot;(\d+)\.(\d+)(\.(\d+)\.(\d+)|\.*)&quot;\)" ReplacementText="AssemblyVersion(&quot;$(AssemblyVersion)&quot;)" />
+    <RegexUpdateFile Files="@(ModifiedAssemblyInfo)" Regex="AssemblyFileVersion\(&quot;(\d+)\.(\d+)(\.(\d+)\.(\d+)|\.*)&quot;\)" ReplacementText="AssemblyFileVersion(&quot;$(AssemblyVersion)&quot;)" />
+    <RegexUpdateFile Files="@(ModifiedAssemblyInfo)" Regex="AssemblyInformationalVersion\(&quot;(\d+)\.(\d+)(\.(\d+)|\.*)&quot;\)" ReplacementText="AssemblyInformationalVersion(&quot;$(PackageVersion)&quot;)" />
     <!-- Include the modified AssemblyInfo.cs file in "Compile" items (instead of the original). -->
     <ItemGroup>
       <Compile Include="@(ModifiedAssemblyInfo)" />

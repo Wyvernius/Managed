@@ -2,9 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>xamarinmac20</TargetFramework>
-    <TargetFrameworkIdentifier>Xamarin.Mac</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <LanguageTargets Condition="'$(OS)' != 'Unix'">$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets</LanguageTargets>
+    <!--LanguageTargets Condition="'$(OS)' != 'Unix'">$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets</LanguageTargets-->
     <Version>3.0.0</Version>
     <Authors>Noesis Technologies</Authors>
     <Description>NoesisGUI NSOpenGL Render Context</Description>
@@ -21,7 +19,7 @@
     <OutputPath Condition="'$(OS)' == 'Unix'">bin/$(Configuration)/$(TargetFramework)</OutputPath>
   </PropertyGroup>
 
-  <Import Condition="'$(OS)' == 'Unix'" Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
+  <!--Import Condition="'$(OS)' == 'Unix'" Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" /-->
 
   <ItemGroup>
     <Reference Include="netstandard" />

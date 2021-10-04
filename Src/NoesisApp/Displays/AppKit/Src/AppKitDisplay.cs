@@ -14,7 +14,10 @@ namespace NoesisApp
 
         private WindowClass _window;
         private WindowDelegate _delegate;
-        TextInputClient _textinputClient;
+        private TextInputClient _textinputClient;
+        private static int _windowCount = 0;
+        private static NSApplication _app;
+        private static bool _init = false;
 
         public WindowClass Window
         {
@@ -23,7 +26,12 @@ namespace NoesisApp
 
         public AppKitDisplay()
         {
-            NSApplication.Init();
+
+            if (!_init)
+                NSApplication.Init();
+
+            _init = true;
+            _windowCount++;
 
             CGRect screenFrame = NSScreen.MainScreen.Frame;
             RectangleF frame = new RectangleF((float)screenFrame.X, (float)screenFrame.Y,
@@ -31,10 +39,10 @@ namespace NoesisApp
             NSWindowStyle style = NSWindowStyle.Titled | NSWindowStyle.Closable |
                 NSWindowStyle.Miniaturizable | NSWindowStyle.Resizable;
 
-            _window = new WindowClass(frame, style, NSBackingStore.Buffered, false);
+            _window = new WindowClass(frame, style, NSBackingStore.Buffered, true);
             _window.AppKitDisplay = this;
             _window.ReleasedWhenClosed = false;
-            _window.BackgroundColor = NSColor.Black;
+            _window.BackgroundColor = NSColor.Red;
             _window.IsOpaque = true;
             _window.AcceptsMouseMovedEvents = true;
             string[] draggedTypes = { NSPasteboard.NSFilenamesType.ToString() };
@@ -73,6 +81,26 @@ namespace NoesisApp
             get { return (float)_window.BackingScaleFactor; }
         }
 
+        public override void SetSize(int width, int height)
+        {
+            _window.SetContentSize(new CGSize(width, height));
+        }
+
+        public override void AdjustWindowSize(ref int width, ref int height)
+        {
+            base.AdjustWindowSize(ref width, ref height);
+        }
+
+        public override void SetTitle(string title)
+        {
+            _window.Title = title;
+        }
+
+        public override void SetLocation(int x, int y)
+        {
+            _window.SetFrameTopLeftPoint(new CGPoint(x, y));
+        }
+
         public override void Show()
         {
             SizeChanged?.Invoke(this, ClientWidth, ClientHeight);
@@ -83,7 +111,7 @@ namespace NoesisApp
 
         public override void EnterMessageLoop(bool runInBackground)
         {
-            NSApplication app = NSApplication.SharedApplication;
+            _app = NSApplication.SharedApplication;
             do
             {
                 NSEvent evt = null;
@@ -91,12 +119,13 @@ namespace NoesisApp
                 {
                     bool wait = !_window.IsKeyWindow && !runInBackground;
                     NSDate expiration = wait ? NSDate.DistantFuture : NSDate.DistantPast;
-                    evt = app.NextEvent(NSEventMask.AnyEvent, expiration, NSRunLoopMode.Default, true);
+                    evt = _app.NextEvent(NSEventMask.AnyEvent, expiration, NSRunLoopMode.Default, true);
 
                     if (evt != null)
                     {
-                        app.SendEvent(evt);
+                        _app.SendEvent(evt);
                     }
+                    OnRender();
                 } while (evt != null);
 
                 if (!IsClosed)
@@ -121,9 +150,20 @@ namespace NoesisApp
             _window.MakeFirstResponder(_window);
         }
 
+        public void OnClosed()
+        {
+            IsClosed = true;
+            _windowCount--;
+            if (_windowCount == 0)
+                _app.Terminate(null);
+            Closed?.Invoke(this);
+        }
+
         public void OnActivated()
         {
             Activated?.Invoke(this);
+            //FIX: Call OnSizeChanged so UI gets properly rendered to scale.
+            OnSizeChanged((int)_window.Frame.Size.Width, (int)_window.Frame.Size.Height);
         }
 
         public void OnDeactivated()
@@ -380,7 +420,7 @@ namespace NoesisApp
             [BindingImpl(BindingImplOptions.GeneratedCode | BindingImplOptions.Optimizable)]
             public new virtual void WillClose(NSNotification notification)
             {
-                _display.IsClosed = true;
+                _display.OnClosed();
             }
 
             [Export("windowDidBecomeKey:")]

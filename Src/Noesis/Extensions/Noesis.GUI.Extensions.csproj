@@ -33,9 +33,6 @@
     <Content Include="$(SolutionDir)THIRD_PARTY.txt" PackagePath="" Pack="true" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Theme\*.xaml" />
-  </ItemGroup>
-  <ItemGroup>
     <Page Include="Theme\*.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -45,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.31" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.37" />
   </ItemGroup>
 
 </Project>
