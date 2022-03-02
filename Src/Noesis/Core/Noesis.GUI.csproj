@@ -16,6 +16,7 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageOutputPath>$(SolutionDir)NuGet\</PackageOutputPath>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
     
   <!-- iOS Targets and References -->
