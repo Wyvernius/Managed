@@ -59,6 +59,25 @@ namespace NoesisApp
         }
 
         /// <summary>
+        /// Searches for a resource, such as a Style or Brush, with the specified key.
+        /// If the requested resource is not found, an Exception is thrown.
+        /// </summary>
+        public object FindResource(object key)
+        {
+            object resource = null;
+            ResourceDictionary resources = _resources;
+            if (resources != null)
+            {
+                resource = resources[key];
+            }
+            if (resource == null)
+            {
+                throw new Exception($"Resource {key} not found");
+            }
+            return resource;
+        }
+
+        /// <summary>
         /// Installs providers that expose resources for Noesis theme.
         /// </summary>
         public static void SetThemeProviders(XamlProvider xamlProvider = null, FontProvider fontProvider = null, TextureProvider textureProvider = null)
@@ -287,6 +306,7 @@ namespace NoesisApp
                 // Make sure the View is destroyed after the Window element tree
                 View view = MainWindow.View;
 
+                MainWindow.Content = null;
                 MainWindow.Shutdown();
                 MainWindow = null;
 
@@ -338,8 +358,18 @@ namespace NoesisApp
         /// <param name="message">Message text</param>
         protected virtual void OnLog(LogLevel level, string channel, string message)
         {
-            if (string.IsNullOrEmpty(channel) || channel == "Binding")
+            // If channel is not main ("") filter out debug and info messages
+            bool filter = !string.IsNullOrEmpty(channel) && level < LogLevel.Warning;
+
+            // Use LogBinding to also enable debug and info for bindings channel
+            if (LogBinding && channel == "Binding")
             {
+                filter = false;
+            }
+
+            if (!filter)
+            {
+                level = level > LogLevel.Error ? LogLevel.Error : level;
                 string[] prefixes = new string[] { "T", "D", "I", "W", "E" };
                 string prefix = (int)level < prefixes.Length ? prefixes[(int)level] : " ";
                 System.Console.WriteLine("[NOESIS/" + prefix + "] " + message);
@@ -430,6 +460,11 @@ namespace NoesisApp
         protected virtual string Title
         {
             get { return ""; }
+        }
+
+        protected virtual bool LogBinding
+        {
+            get { return false; }
         }
 
         protected virtual bool RunInBackground
