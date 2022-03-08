@@ -53,12 +53,15 @@ namespace NoesisApp
             _displays[0].EnterMessageLoop(RunInBackGround);
         }
 
-        public void CreateWindow(Window window, Display display, RenderContext context)
+        public void CreateWindow(Window window, Display display, RenderContext context, ResizeMode resizeMode = ResizeMode.CanResize, WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen, WindowState windowState = WindowState.Normal, WindowStyle windowStyle = WindowStyle.ThreeDBorderWindow)
         {
             Window _window = AddWindow(window);
 
             Display _display = AddDisplay(display);
-            _display.SetResizeMode(ResizeMode.CanResize);
+            _display.SetResizeMode(resizeMode);
+            _display.SetWindowStartupLocation(startupLocation);
+            _display.SetWindowState(windowState);
+            _display.SetWindowStyle(windowStyle);
 
             RenderContext _context = AddContext(context);
             _context.Init(_display.NativeHandle, _display.NativeWindow, 1, true, false);
