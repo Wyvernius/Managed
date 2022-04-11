@@ -43,6 +43,16 @@ namespace NoesisApp
             _instance = this;
         }
 
+        public WindowManager(bool vsync, bool ppaa)
+        {
+            _instance = this;
+            _vsync = vsync;
+            _ppaa = ppaa;
+        }
+
+        private bool _vsync = false;
+        private bool _ppaa = false;
+
         public int WindowCount => _displays.Count;
         public Action<Display> WindowClosed;
         public Action<Display> AppClosed;
@@ -64,9 +74,9 @@ namespace NoesisApp
             _display.SetWindowStyle(windowStyle);
 
             RenderContext _context = AddContext(context);
-            _context.Init(_display.NativeHandle, _display.NativeWindow, 1, true, false);
+            _context.Init(_display.NativeHandle, _display.NativeWindow, 1, _vsync, false);
 
-            _window.Init(_display, _context, 1, false, false, false, 0, 0, 0, 0);
+            _window.Init(_display, _context, 1, _ppaa, false, false, 0, 0, 0, 0);
 
             _display.Render += Render;
             _display.Closed += OnClosed;
