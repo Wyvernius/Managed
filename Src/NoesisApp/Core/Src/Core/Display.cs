@@ -51,6 +51,14 @@ namespace NoesisApp
         CenterOwner
     };
 
+    public enum WindowType
+    {
+        /// Default type of window
+        ChildWindow,
+        /// Main window of the application.
+        MainWindow
+    }
+
     public delegate void LocationChangedEventHandler(Display display, int x, int y);
     public delegate void SizeChangedEventHandler(Display display, int width, int height);
     public delegate void StateChangedEventHandler(Display display, WindowState state);
@@ -96,6 +104,11 @@ namespace NoesisApp
         public abstract int ClientHeight { get; }
 
         /// <summary>
+        /// Returns window type.
+        /// </summary>
+        public abstract WindowType WindowType { get; }
+
+        /// <summary>
         /// Returns DPI scale required for UI elements
         /// </summary>
         public virtual float Scale { get { return 1.0F; } }
@@ -134,6 +147,12 @@ namespace NoesisApp
         /// Sets window resize mode
         /// </summary>
         public virtual void SetResizeMode(ResizeMode resizeMode) { }
+
+        /// <summary>
+        /// Sets window type
+        /// </summary>
+        /// <param name="windowType"></param>
+        public virtual void SetWindowType(WindowType windowType) { }
 
         /// <summary>
         /// Sets if the window has a task bar button 

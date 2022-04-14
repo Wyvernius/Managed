@@ -135,6 +135,11 @@ namespace NoesisApp
             }
         }
 
+        public override WindowType WindowType
+        {
+            get { return _wndType; }
+        }
+
         public override void AdjustWindowSize(ref int width, ref int height)
         {
             WinApi.Rectangle r = new WinApi.Rectangle
@@ -208,6 +213,11 @@ namespace NoesisApp
                 out flags, out flagsEx);
 
             SetStyleFlags(flags, flagsEx);
+        }
+
+        public override void SetWindowType(WindowType windowType)
+        {
+            _wndType = windowType;
         }
 
         public override void SetShowInTaskbar(bool showInTaskbar)
@@ -1198,6 +1208,7 @@ namespace NoesisApp
         private WinApi.GetDpiForMonitor _getDpiForMonitor = null;
         private IntPtr _shcore = IntPtr.Zero;
         private bool _visible = false;
+        private WindowType _wndType = WindowType.MainWindow;
         #endregion
 
         private static class WinApi
