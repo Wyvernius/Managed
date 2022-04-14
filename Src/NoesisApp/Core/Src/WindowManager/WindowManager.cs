@@ -60,9 +60,29 @@ namespace NoesisApp
         public Action<Display> AppClosed;
         public Action OnRender;
 
-        public void EnterMessageLoop(bool RunInBackGround)
+        /// <summary>
+        /// Kick start Application
+        /// </summary>
+        /// <param name="RunInBackGround"></param>
+        public void EnterMessageLoop()
         {
-            _displays[0].EnterMessageLoop(RunInBackGround);
+            if (_lifeCycle == WindowManagerLifyCycle.MainWindowClose)
+            {
+                for (int i = 0; i < _displays.Count; i++)
+                {
+                    if (_displays[i].WindowType == WindowType.MainWindow)
+                    {
+                        EnterMessageLoop(i, _displays[i].WindowType == WindowType.MainWindow ? false : true);
+                    }
+                }
+            }
+            else
+                _displays[0].EnterMessageLoop(_displays[0].WindowType == WindowType.MainWindow ? false : true);
+        }
+
+        private void EnterMessageLoop(int index, bool RunInBackGround)
+        {
+            _displays[index].EnterMessageLoop(RunInBackGround);
         }
 
         public void CreateWindow(Window window, Display display, RenderContext context, ResizeMode resizeMode = ResizeMode.CanResize, WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen, WindowState windowState = WindowState.Normal, WindowStyle windowStyle = WindowStyle.ThreeDBorderWindow)
@@ -141,14 +161,11 @@ namespace NoesisApp
 
             if (_lifeCycle == WindowManagerLifyCycle.MainWindowClose)
             {
-                bool MainAlive = false;
-                foreach (var disp in _displays)
+                for (int i = 0; i < _displays.Count; i++)
                 {
-                    if (disp.WindowType == WindowType.MainWindow)
-                        MainAlive = true;
+                    if (_displays[i].WindowType == WindowType.MainWindow)
+                        EnterMessageLoop(i, _displays[i].WindowType == WindowType.MainWindow ? false : true);
                 }
-                if (MainAlive)
-                    EnterMessageLoop(true);
             }
         }
     }
