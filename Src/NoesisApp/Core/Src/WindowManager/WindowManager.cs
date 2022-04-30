@@ -18,13 +18,15 @@ namespace NoesisApp
 
     public class WindowManager
     {
-        static List<Window> _windows = new List<Window>();
-        static List<Display> _displays = new List<Display>();
-        static List<RenderContext> _contexts = new List<RenderContext>();
-        static List<DateTime> _startTime = new List<DateTime>();
-        static WindowManagerLifyCycle _lifeCycle = WindowManagerLifyCycle.LastWindowClose;
-        static WindowManager _instance;
-        public SynchronizationContext _sycnContext;
+        private List<Window> _windows = new List<Window>();
+        private List<Display> _displays = new List<Display>();
+        private List<RenderContext> _contexts = new List<RenderContext>();
+        private List<DateTime> _startTime = new List<DateTime>();
+        private WindowManagerLifyCycle _lifeCycle = WindowManagerLifyCycle.LastWindowClose;
+        private IPlatformDisplayProvider _displayProvider;
+        private IPlatformRenderContextProvider _contextProvider;
+        static  WindowManager _instance;
+
         private bool _lastWindowClosed = true;
         T AddWindow<T>(T window) where T : Window
         {
@@ -46,13 +48,22 @@ namespace NoesisApp
 
         public static WindowManager Instance => _instance;
 
+        public WindowManager(IPlatformDisplayProvider displayProvider, IPlatformRenderContextProvider contextProvider, WindowManagerLifyCycle windowManagerLifyCycle = WindowManagerLifyCycle.LastWindowClose, bool vsync = true, bool ppaa = true)
+        {
+            _instance = this;
+            _lifeCycle = windowManagerLifyCycle;
+            _vsync = vsync;
+            _ppaa = ppaa;
+            _displayProvider = displayProvider;
+            _contextProvider = contextProvider;
+        }
+
         public WindowManager(WindowManagerLifyCycle windowManagerLifyCycle = WindowManagerLifyCycle.LastWindowClose, bool vsync = true, bool ppaa = true)
         {
             _instance = this;
             _lifeCycle = windowManagerLifyCycle;
             _vsync = vsync;
             _ppaa = ppaa;
-            _sycnContext = Dispatcher.CurrentDispatcher.SynchronizationContext;
         }
 
         private bool _vsync = false;
@@ -104,14 +115,25 @@ namespace NoesisApp
             _displays[index].EnterMessageLoop(RunInBackGround);
         }
 
-        public void CreateWindow(Window window, Display display, RenderContext context, ResizeMode resizeMode = ResizeMode.CanResize, WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen, WindowState windowState = WindowState.Normal, WindowStyle windowStyle = WindowStyle.ThreeDBorderWindow)
+        private bool HasProvider()
         {
-            CreateWindowInternal(window, display, context, WindowType.ChildWindow, resizeMode, startupLocation, windowState, windowStyle);
+            return _displayProvider == null || _contextProvider == null;
         }
 
-        public void CreateMainWindow(Window window, Display display, RenderContext context, ResizeMode resizeMode = ResizeMode.CanResize, WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen, WindowState windowState = WindowState.Normal, WindowStyle windowStyle = WindowStyle.ThreeDBorderWindow)
+        public void CreateWindow(Window window, ResizeMode resizeMode = ResizeMode.CanResize, WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen, WindowState windowState = WindowState.Normal, WindowStyle windowStyle = WindowStyle.ThreeDBorderWindow)
         {
-            CreateWindowInternal(window, display, context, WindowType.MainWindow, resizeMode, startupLocation, windowState, windowStyle);
+            if (!HasProvider())
+                throw new Exception("No providers provided");
+
+            CreateWindowInternal(window, _displayProvider.GetDisplay(), _contextProvider.GetRenderContext(), WindowType.ChildWindow, resizeMode, startupLocation, windowState, windowStyle);
+        }
+
+        public void CreateMainWindow(Window window, ResizeMode resizeMode = ResizeMode.CanResize, WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen, WindowState windowState = WindowState.Normal, WindowStyle windowStyle = WindowStyle.ThreeDBorderWindow)
+        {
+            if (!HasProvider())
+                throw new Exception("No providers provided");
+
+            CreateWindowInternal(window, _displayProvider.GetDisplay(), _contextProvider.GetRenderContext(), WindowType.MainWindow, resizeMode, startupLocation, windowState, windowStyle);
         }
 
         private void CreateWindowInternal(Window window, Display display, RenderContext context, WindowType type, ResizeMode resizeMode = ResizeMode.CanResize, WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen, WindowState windowState = WindowState.Normal, WindowStyle windowStyle = WindowStyle.ThreeDBorderWindow)
