@@ -117,7 +117,7 @@ namespace NoesisApp
 
         private bool HasProvider()
         {
-            return _displayProvider == null || _contextProvider == null;
+            return _displayProvider != null && _contextProvider != null;
         }
 
         public void CreateWindow(Window window, ResizeMode resizeMode = ResizeMode.CanResize, WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen, WindowState windowState = WindowState.Normal, WindowStyle windowStyle = WindowStyle.ThreeDBorderWindow)
