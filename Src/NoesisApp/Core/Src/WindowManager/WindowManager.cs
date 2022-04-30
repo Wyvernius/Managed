@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -23,7 +24,8 @@ namespace NoesisApp
         static List<DateTime> _startTime = new List<DateTime>();
         static WindowManagerLifyCycle _lifeCycle = WindowManagerLifyCycle.LastWindowClose;
         static WindowManager _instance;
-
+        public SynchronizationContext _sycnContext;
+        private bool _lastWindowClosed = true;
         T AddWindow<T>(T window) where T : Window
         {
             _windows.Add(window);
@@ -50,6 +52,7 @@ namespace NoesisApp
             _lifeCycle = windowManagerLifyCycle;
             _vsync = vsync;
             _ppaa = ppaa;
+            _sycnContext = Dispatcher.CurrentDispatcher.SynchronizationContext;
         }
 
         private bool _vsync = false;
@@ -66,18 +69,34 @@ namespace NoesisApp
         /// <param name="RunInBackGround"></param>
         public void EnterMessageLoop()
         {
-            if (_lifeCycle == WindowManagerLifyCycle.MainWindowClose)
+            while (WindowCount > 0)
             {
-                for (int i = 0; i < _displays.Count; i++)
+                if (_lifeCycle == WindowManagerLifyCycle.MainWindowClose)
                 {
-                    if (_displays[i].WindowType == WindowType.MainWindow)
+                    bool hasMinwindow = false;
+                    for (int i = 0; i < _displays.Count; i++)
                     {
+                        if (_displays[i].WindowType == WindowType.ChildWindow)
+                            continue;
+
+                        hasMinwindow = true;
                         EnterMessageLoop(i, _displays[i].WindowType == WindowType.MainWindow ? false : true);
+                        break; // return to while loop.
+                    }
+                    if (!hasMinwindow) // no mainwindows anymore cleanup all other windows.
+                    {
+                        for (int i = WindowCount - 1; i > -1; i--)
+                        {
+                            OnClosed(_displays[i]);
+                        }
                     }
                 }
+                else if (_lifeCycle == WindowManagerLifyCycle.LastWindowClose)
+                {
+                    EnterMessageLoop(0, _displays[0].WindowType == WindowType.MainWindow ? false : true);
+                    continue; // return to while loop.
+                }
             }
-            else
-                _displays[0].EnterMessageLoop(_displays[0].WindowType == WindowType.MainWindow ? false : true);
         }
 
         private void EnterMessageLoop(int index, bool RunInBackGround)
@@ -87,46 +106,34 @@ namespace NoesisApp
 
         public void CreateWindow(Window window, Display display, RenderContext context, ResizeMode resizeMode = ResizeMode.CanResize, WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen, WindowState windowState = WindowState.Normal, WindowStyle windowStyle = WindowStyle.ThreeDBorderWindow)
         {
-            Window _window = AddWindow(window);
-
-            Display _display = AddDisplay(display);
-            _display.SetResizeMode(resizeMode);
-            _display.SetWindowStartupLocation(startupLocation);
-            _display.SetWindowState(windowState);
-            _display.SetWindowStyle(windowStyle);
-            _display.SetWindowType(WindowType.ChildWindow);
-
-            RenderContext _context = AddContext(context);
-            _context.Init(_display.NativeHandle, _display.NativeWindow, 1, _vsync, false);
-
-            _window.Init(_display, _context, 1, _ppaa, false, false, 0, 0, 0, 0);
-
-            _display.Render += Render;
-            _display.Closed += OnClosed;
-            _display.Show();
-            _startTime.Add(DateTime.Now);
+            CreateWindowInternal(window, display, context, WindowType.ChildWindow, resizeMode, startupLocation, windowState, windowStyle);
         }
 
         public void CreateMainWindow(Window window, Display display, RenderContext context, ResizeMode resizeMode = ResizeMode.CanResize, WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen, WindowState windowState = WindowState.Normal, WindowStyle windowStyle = WindowStyle.ThreeDBorderWindow)
         {
+            CreateWindowInternal(window, display, context, WindowType.MainWindow, resizeMode, startupLocation, windowState, windowStyle);
+        }
+
+        private void CreateWindowInternal(Window window, Display display, RenderContext context, WindowType type, ResizeMode resizeMode = ResizeMode.CanResize, WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen, WindowState windowState = WindowState.Normal, WindowStyle windowStyle = WindowStyle.ThreeDBorderWindow)
+        {
+            _startTime.Add(DateTime.Now);
             Window _window = AddWindow(window);
-            
             Display _display = AddDisplay(display);
+            RenderContext _context = AddContext(context);
+
+            _context.Init(_display.NativeHandle, _display.NativeWindow, 1, _vsync, false);
+            _window.Init(_display, _context, 1, _ppaa, false, false, 0, 0, 0, 0);
+
+            _display.SetWindowType(type);
             _display.SetResizeMode(resizeMode);
             _display.SetWindowStartupLocation(startupLocation);
-            _display.SetWindowState(windowState);
             _display.SetWindowStyle(windowStyle);
-            _display.SetWindowType(WindowType.MainWindow);
-
-            RenderContext _context = AddContext(context);
-            _context.Init(_display.NativeHandle, _display.NativeWindow, 1, _vsync, false);
-
-            _window.Init(_display, _context, 1, _ppaa, false, false, 0, 0, 0, 0);
 
             _display.Render += Render;
             _display.Closed += OnClosed;
             _display.Show();
-            _startTime.Add(DateTime.Now);
+
+            _display.SetWindowState(windowState);
         }
 
         void Render(Display display)
@@ -142,31 +149,17 @@ namespace NoesisApp
         {
             int index = _displays.IndexOf(display);
             WindowClosed?.Invoke(_displays[index]);
-            bool lastWindowClosed = false;
 
             // about to close last window.
             if (_displays.Count - 1 == 0)
             {
                 AppClosed?.Invoke(_displays[index]);
-                lastWindowClosed = true;
             }
 
             _displays.RemoveAt(index);
             _windows.RemoveAt(index);
             _contexts.RemoveAt(index);
             _startTime.RemoveAt(index);
-
-            if (_lifeCycle == WindowManagerLifyCycle.LastWindowClose && lastWindowClosed)
-                return;
-
-            if (_lifeCycle == WindowManagerLifyCycle.MainWindowClose)
-            {
-                for (int i = 0; i < _displays.Count; i++)
-                {
-                    if (_displays[i].WindowType == WindowType.MainWindow)
-                        EnterMessageLoop(i, _displays[i].WindowType == WindowType.MainWindow ? false : true);
-                }
-            }
         }
     }
 }
