@@ -468,7 +468,7 @@ namespace NoesisApp
             }
 
             public WindowClass(RectangleF rect, NSWindowStyle style, NSBackingStore backingStore, bool defer) :
-                base(rect, style, backingStore, defer)
+                base(new CGRect(rect.Left, rect.Top, rect.Width, rect.Height), style, backingStore, defer)
             {
             }
 
