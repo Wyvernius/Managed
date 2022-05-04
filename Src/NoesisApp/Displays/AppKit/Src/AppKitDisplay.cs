@@ -4,6 +4,7 @@ using Foundation;
 using CoreGraphics;
 using System.Drawing;
 using Noesis;
+
 using ObjCRuntime;
 
 namespace NoesisApp
@@ -29,7 +30,7 @@ namespace NoesisApp
 
             if (!_init)
                 NSApplication.Init();
-
+           
             _init = true;
             _windowCount++;
 
@@ -45,13 +46,14 @@ namespace NoesisApp
             _window.BackgroundColor = NSColor.Red;
             _window.IsOpaque = true;
             _window.AcceptsMouseMovedEvents = true;
+           
             string[] draggedTypes = { NSPasteboard.NSFilenamesType.ToString() };
             _window.RegisterForDraggedTypes(draggedTypes);
             _delegate = new WindowDelegate(this, _window);
             _window.Delegate = _delegate;
 
             _textinputClient = new TextInputClient(this);
-            _window.ContentView.AddSubview(_textinputClient);
+            _window.ContentView?.AddSubview(_textinputClient);
 
             FillKeyTable();
         }
@@ -81,6 +83,13 @@ namespace NoesisApp
             get { return (float)_window.BackingScaleFactor; }
         }
 
+        WindowType _windowType;
+
+        public override WindowType WindowType
+        {
+            get { return _windowType; }
+        }
+
         public override void SetSize(int width, int height)
         {
             _window.SetContentSize(new CGSize(width, height));
@@ -99,6 +108,11 @@ namespace NoesisApp
         public override void SetLocation(int x, int y)
         {
             _window.SetFrameTopLeftPoint(new CGPoint(x, y));
+        }
+
+        public void SetType(WindowType type)
+        {
+            _windowType = type;
         }
 
         public override void Show()
@@ -150,10 +164,17 @@ namespace NoesisApp
             _window.MakeFirstResponder(_window);
         }
 
+        public override void Close()
+        {
+            Console.WriteLine($"Closing window from: {this.GetType().Name}");
+            _window.PerformClose(null);
+        }
+
         public void OnClosed()
         {
             IsClosed = true;
             _windowCount--;
+            Console.WriteLine(System.Environment.StackTrace + "\r\n\r\n\r\n");
             if (_windowCount == 0)
                 _app.Terminate(null);
             Closed?.Invoke(this);
@@ -649,6 +670,11 @@ namespace NoesisApp
             {
                 UpdateModifiers(evt);
                 AppKitDisplay.OnKeyUp(evt.KeyCode);
+            }
+
+            public override void PerformClose(NSObject? sender)
+            {
+                base.PerformClose(sender);
             }
 
             public void InsertText(string text)
