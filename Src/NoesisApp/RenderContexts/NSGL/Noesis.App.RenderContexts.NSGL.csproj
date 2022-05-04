@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>xamarinmac20</TargetFramework>
+    <TargetFrameworks>xamarinmac20</TargetFrameworks>
     <!--LanguageTargets Condition="'$(OS)' != 'Unix'">$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets</LanguageTargets-->
     <Version>3.0.0</Version>
     <Authors>Noesis Technologies</Authors>
@@ -47,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(SolutionDir)Icon-256.png" Pack="true" PackagePath="\"/>
+    <None Include="$(SolutionDir)Icon-256.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

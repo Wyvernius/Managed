@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net6.0-macos</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <EnableCodeSigning>false</EnableCodeSigning>
+    <UseSGen>false</UseSGen>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <EnableCodeSigning>false</EnableCodeSigning>
+    <UseSGen>false</UseSGen>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\NSGL\Src\RenderContextNSGL.cs">
+      <Link>Src\RenderContextNSGL.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Noesis.App.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Src\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Src\" />
+  </ItemGroup>
+</Project>

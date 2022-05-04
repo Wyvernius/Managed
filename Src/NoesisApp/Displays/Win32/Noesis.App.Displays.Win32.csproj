@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(SolutionDir)Icon-256.png" Pack="true" PackagePath="\"/>
+    <None Include="$(SolutionDir)Icon-256.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
